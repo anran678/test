@@ -1,0 +1,30 @@
+Resolution: 16x16
+Kernel Size: 3, Latency: 2.26 ms
+Kernel Size: 5, Latency: 5.04 ms
+Kernel Size: 7, Latency: 8.43 ms
+Kernel Size: 9, Latency: 11.64 ms
+Kernel Size: 13, Latency: 21.51 ms
+Kernel Size: 17, Latency: 34.63 ms
+Kernel Size: 21, Latency: 51.00 ms
+Kernel Size: 27, Latency: 83.41 ms
+Kernel Size: 29, Latency: 93.44 ms
+Kernel Size: 31, Latency: 107.79 ms
+Resolution: 32x32
+Kernel Size: 3, Latency: 8.17 ms
+Kernel Size: 5, Latency: 19.91 ms
+Kernel Size: 7, Latency: 33.31 ms
+Kernel Size: 9, Latency: 46.25 ms
+Kernel Size: 13, Latency: 85.81 ms
+Kernel Size: 17, Latency: 138.47 ms
+Kernel Size: 21, Latency: 204.22 ms
+Kernel Size: 27, Latency: 333.22 ms
+Kernel Size: 29, Latency: 374.30 ms
+Kernel Size: 31, Latency: 432.20 ms
+Resolution: 64x64
+Kernel Size: 3, Latency: 32.74 ms
+Kernel Size: 5, Latency: 79.73 ms
+Kernel Size: 7, Latency: 133.46 ms
+Kernel Size: 9, Latency: 185.47 ms
+Kernel Size: 13, Latency: 344.58 ms
+Kernel Size: 17, Latency: 556.85 ms
+Kernel Size: 21, Latency: 822.73 ms
