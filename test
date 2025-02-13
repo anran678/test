@@ -49,6 +49,7 @@ plt.figure(figsize=(10, 5))
 
 # 绘制loss曲线
 for log_file, losses_values in losses.items():
+    processed_losses = np.where(np.array(losses[log_file][10:min_epochs]) > 0.5, 0.5, losses[log_file][10:min_epochs])
     plt.plot(list(range(10,min_epochs)), losses[log_file][10:min_epochs], label=f'{log_file} Loss')
 
 plt.title('PSNR and Loss Curves')
