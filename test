@@ -1,19 +1,58 @@
-import torch
-import torch.nn as nn
+import re
+import matplotlib.pyplot as plt
 
-class LearnablePReLU(nn.Module):
-    def __init__(self, init_alpha=0.25):
-        super().__init__()
-        # 定义可学习参数 alpha，初始值为 0.25
-        self.alpha = nn.Parameter(torch.tensor(init_alpha, dtype=torch.float32))
+# 正则表达式，用于匹配文件中的loss和PSNR值
+loss_pattern = re.compile(r'train: loss=([\d.]+)')
+psnr_pattern = re.compile(r'val: (psnr|psnrX4)=([\d.]+)')
 
-    def forward(self, x):
-        # 前向传播：正区保持 x，负区用 alpha*x
-        return torch.where(x >= 0, x, self.alpha * x)
+# 初始化列表来存储提取的数据
+all_epochs = []
+losses = {}
+psnrs = {}
 
-# 在模型中使用
-model = nn.Sequential(
-    nn.Linear(784, 256),
-    LearnablePReLU(),  # 替代普通激活函数
-    nn.Linear(256, 10)
-)
+# 打开并读取文件
+log_files = ['C:/Users/anran/Desktop/log.txt', 'C:/Users/anran/Desktop/log (3).txt']#, 'C:/Users/anran/Desktop/log (4).txt']
+for log_file in log_files:
+    epochs = []
+    losses[log_file] = []
+    psnrs[log_file] = []
+    with open(log_file, 'r') as file:
+        for line in file:
+            # 使用正则表达式提取loss值
+            loss_match = loss_pattern.search(line)
+            if loss_match:
+                loss = float(loss_match.group(1))
+                losses[log_file].append(loss)
+            
+            # 使用正则表达式提取PSNR值
+            psnr_match = psnr_pattern.search(line)
+            if psnr_match:
+                psnr = float(psnr_match.group(2))
+                psnrs[log_file].append(psnr)
+            
+            # 提取epoch值
+            epoch_match = re.search(r'epoch (\d+)', line)
+            if epoch_match:
+                epoch = int(epoch_match.group(1))
+                epochs.append(epoch)
+    all_epochs.append(epochs)
+
+# 找到最小的epoch长度
+min_epochs = min(map(len, all_epochs))
+
+# 绘制曲线
+plt.figure(figsize=(10, 5))
+
+# # 绘制PSNR曲线
+# for log_file, psnrs_values in psnrs.items():
+#     plt.plot(list(range(min_epochs)), psnrs[log_file][:min_epochs], label=f'{log_file} PSNR')
+
+# 绘制loss曲线
+for log_file, losses_values in losses.items():
+    plt.plot(list(range(10,min_epochs)), losses[log_file][10:min_epochs], label=f'{log_file} Loss')
+
+plt.title('PSNR and Loss Curves')
+plt.xlabel('Epochs')
+plt.ylabel('Value')
+plt.legend()  # 显示图例
+plt.show()
