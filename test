@@ -1,59 +1,40 @@
-import re
+import torch
+import torchvision.utils as vutils
 import matplotlib.pyplot as plt
+import numpy as np
 
-# 正则表达式，用于匹配文件中的loss和PSNR值
-loss_pattern = re.compile(r'train: loss=([\d.]+)')
-psnr_pattern = re.compile(r'val: (psnr|psnrX4)=([\d.]+)')
+def apply_colormap(tensor, colormap=plt.cm.jet):
+    """
+    将单通道张量转换为伪彩色张量
+    Args:
+        tensor (torch.Tensor): 单通道张量，形状为 (C=1, H, W) 或 (H, W)
+        colormap: Matplotlib 的 colormap 对象，例如 plt.cm.jet, plt.cm.viridis
+    Returns:
+        colored_tensor (torch.Tensor): 伪彩色张量，形状为 (C=3, H, W)
+    """
+    # 转换为 NumPy 并移除批次维度（如果存在）
+    if tensor.dim() == 4:
+        tensor = tensor.squeeze(0)
+    if tensor.dim() == 3:
+        tensor = tensor.squeeze(0)
+    
+    # 归一化到 [0, 1]
+    tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min() + 1e-8)
+    np_data = tensor.cpu().numpy()
+    
+    # 应用伪彩色映射
+    colored_data = colormap(np_data)[..., :3]  # 取 RGB 通道，忽略 alpha
+    colored_data = torch.from_numpy(colored_data).permute(2, 0, 1)  # 转为 (C=3, H, W)
+    
+    return colored_data.float()
 
-# 初始化列表来存储提取的数据
-all_epochs = []
-losses = {}
-psnrs = {}
-
-# 打开并读取文件
-log_files = ['C:/Users/anran/Desktop/log.txt', 'C:/Users/anran/Desktop/log (3).txt']#, 'C:/Users/anran/Desktop/log (4).txt']
-for log_file in log_files:
-    epochs = []
-    losses[log_file] = []
-    psnrs[log_file] = []
-    with open(log_file, 'r') as file:
-        for line in file:
-            # 使用正则表达式提取loss值
-            loss_match = loss_pattern.search(line)
-            if loss_match:
-                loss = float(loss_match.group(1))
-                losses[log_file].append(loss)
-            
-            # 使用正则表达式提取PSNR值
-            psnr_match = psnr_pattern.search(line)
-            if psnr_match:
-                psnr = float(psnr_match.group(2))
-                psnrs[log_file].append(psnr)
-            
-            # 提取epoch值
-            epoch_match = re.search(r'epoch (\d+)', line)
-            if epoch_match:
-                epoch = int(epoch_match.group(1))
-                epochs.append(epoch)
-    all_epochs.append(epochs)
-
-# 找到最小的epoch长度
-min_epochs = min(map(len, all_epochs))
-
-# 绘制曲线
-plt.figure(figsize=(10, 5))
-
-# # 绘制PSNR曲线
-# for log_file, psnrs_values in psnrs.items():
-#     plt.plot(list(range(min_epochs)), psnrs[log_file][:min_epochs], label=f'{log_file} PSNR')
-
-# 绘制loss曲线
-for log_file, losses_values in losses.items():
-    processed_losses = np.where(np.array(losses[log_file][10:min_epochs]) > 0.5, 0.5, losses[log_file][10:min_epochs])
-    plt.plot(list(range(10,min_epochs)), losses[log_file][10:min_epochs], label=f'{log_file} Loss')
-
-plt.title('PSNR and Loss Curves')
-plt.xlabel('Epochs')
-plt.ylabel('Value')
-plt.legend()  # 显示图例
-plt.show()
+# 示例用法
+if __name__ == "__main__":
+    # 生成单通道特征图（例如形状为 (1, 28, 28)）
+    feature_map = torch.randn(1, 28, 28)
+    
+    # 应用伪彩色映射
+    colored_feature = apply_colormap(feature_map, colormap=plt.cm.jet)
+    
+    # 保存伪彩色图像
+    vutils.save_image(colored_feature, "pseudo_color_feature.png")
