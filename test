@@ -74,3 +74,47 @@ if __name__ == "__main__":
     
     # 保存图像
     vutils.save_image(colored, "pseudo_color_custom.png")
+
+
+
+
+
+
+
+
+
+
+def apply_lut_colormap(tensor, lut=None):
+    """
+    使用预定义颜色查找表生成伪彩色
+    Args:
+        tensor (torch.Tensor): 单通道张量，形状为 (1, H, W)
+        lut (torch.Tensor): 预定义的颜色表，形状为 (256, 3)
+    Returns:
+        colored_tensor (torch.Tensor): 伪彩色张量，形状为 (3, H, W)
+    """
+    # 归一化到 [0, 1] 并缩放到 [0, 255]
+    tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min() + 1e-8)
+    indices = (tensor * 255).long().clamp(0, 255)
+    
+    # 默认 LUT（示例：Jet 颜色映射）
+    if lut is None:
+        # 生成 Jet 颜色表（RGB格式）
+        jet = torch.tensor([
+            [0, 0, 128],    # 深蓝
+            [0, 0, 255],    # 蓝
+            [0, 255, 255],  # 青
+            [255, 255, 0],  # 黄
+            [255, 0, 0],    # 红
+            [128, 0, 0]     # 深红
+        ], dtype=torch.float32)
+        lut = torch.cat([jet[i].repeat(51, 1) for i in range(5)] + [jet[-1].repeat(1, 1)], dim=0)
+        lut = lut / 255.0  # 归一化到 [0, 1]
+    
+    # 应用 LUT
+    colored_tensor = lut[indices].permute(2, 0, 1)  # 形状 (3, H, W)
+    return colored_tensor
+
+# 示例用法
+colored = apply_lut_colormap(feature_map)
+vutils.save_image(colored, "pseudo_color_lut.png")
