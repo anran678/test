@@ -38,3 +38,39 @@ if __name__ == "__main__":
     
     # 保存伪彩色图像
     vutils.save_image(colored_feature, "pseudo_color_feature.png")
+
+
+
+import torch
+import torchvision.utils as vutils
+
+def apply_pseudo_color(tensor):
+    """
+    将单通道张量转换为伪彩色张量（蓝→青→绿→黄→红）
+    Args:
+        tensor (torch.Tensor): 单通道张量，形状为 (1, H, W) 或 (H, W)
+    Returns:
+        colored_tensor (torch.Tensor): 伪彩色张量，形状为 (3, H, W)
+    """
+    # 归一化到 [0, 1]
+    tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min() + 1e-8)
+    
+    # 定义颜色映射规则（基于分段线性函数）
+    r = torch.clamp(1.5 * torch.abs(tensor - 0.5) - 0.25, 0, 1)
+    g = torch.clamp(1.5 - 3 * torch.abs(tensor - 0.5), 0, 1)
+    b = torch.clamp(1.5 * (0.5 - torch.abs(tensor - 0.5)), 0, 1)
+    
+    # 合并通道
+    colored_tensor = torch.stack([r, g, b], dim=0).squeeze()  # 输出形状 (3, H, W)
+    return colored_tensor
+
+# 示例用法
+if __name__ == "__main__":
+    # 生成单通道特征图（形状 (1, 28, 28)）
+    feature_map = torch.rand(1, 28, 28)
+    
+    # 应用伪彩色
+    colored = apply_pseudo_color(feature_map)
+    
+    # 保存图像
+    vutils.save_image(colored, "pseudo_color_custom.png")
