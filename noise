@@ -1,0 +1,74 @@
+import os
+import math
+import torch
+from PIL import Image
+from torchvision import transforms
+
+def resize_fn(img, size):
+    """BICUBIC缩放函数"""
+    return transforms.ToTensor()(
+        transforms.Resize(size, Image.BICUBIC)(
+            transforms.ToPILImage()(img)))
+
+def process_images(input_folder, output_folder, s, noise_std=25):
+    """
+    处理文件夹中的图片：比例缩放、添加高斯噪声并保存
+
+    参数：
+        input_folder (str): 输入图片文件夹路径
+        output_folder (str): 输出文件夹路径
+        s (float): 缩放比例因子（>1表示缩小，<1表示放大）
+        noise_std (int): 高斯噪声标准差，默认25
+    """
+    # 支持的图片格式
+    valid_exts = {'jpg', 'jpeg', 'png', 'bmp', 'gif'}
+    
+    # 创建输出文件夹
+    os.makedirs(output_folder, exist_ok=True)
+
+    # 初始化转换器
+    to_tensor = transforms.ToTensor()
+
+    # 遍历输入文件夹
+    for filename in os.listdir(input_folder):
+        if filename.split('.')[-1].lower() not in valid_exts:
+            continue
+        
+        input_path = os.path.join(input_folder, filename)
+        
+        try:
+            with Image.open(input_path) as img:
+                img = img.convert('RGB')
+                img_tensor = to_tensor(img)
+                
+                # 计算低分辨率尺寸
+                h_hr, w_hr = img_tensor.shape[-2], img_tensor.shape[-1]
+                h_lr = math.floor(h_hr / s + 1e-9)
+                w_lr = math.floor(w_hr / s + 1e-9)
+                
+                # 裁剪原图并下采样
+                img_cropped = img_tensor[:, :round(h_lr*s), :round(w_lr*s)]
+                img_down = resize_fn(img_cropped, (h_lr, w_lr))
+                
+                # 添加高斯噪声
+                noise = torch.randn_like(img_down) * noise_std/255
+                noisy_tensor = img_down + noise
+                noisy_tensor = torch.clamp(noisy_tensor, 0, 1)
+                
+                # 保存处理结果
+                noisy_img = transforms.ToPILImage()(noisy_tensor)
+                output_path = os.path.join(output_folder, filename)
+                noisy_img.save(output_path)
+                
+                print(f"处理完成：{filename} (原始尺寸: {h_hr}x{w_hr} -> 新尺寸: {h_lr}x{w_lr})")
+
+        except Exception as e:
+            print(f"处理 {filename} 时出错：{str(e)}")
+
+if __name__ == "__main__":
+    # 使用示例
+    input_folder = "D://A//benchmark//benchmark//Set5//HR"    # 替换为你的输入文件夹路径
+    output_folder = "D://A//benchmark//benchmark//Set5//noise"  # 替换为输出文件夹路径
+    scale_factor = 1  # 缩小为原图的1/4
+    
+    process_images(input_folder, output_folder, scale_factor, noise_std=10)
