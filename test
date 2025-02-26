@@ -1,77 +1,16 @@
-import os
-from PIL import Image
-import numpy as np
-import torch
-
-def calc_psnr(sr, hr, dataset=None, scale=1, rgb_range=1):
-    diff = (sr - hr) / rgb_range
-    if dataset is not None:
-        if dataset == 'benchmark':
-            shave = scale
-            if diff.size(1) > 1:
-                gray_coeffs = [65.738, 129.057, 25.064]
-                convert = diff.new_tensor(gray_coeffs).view(1, 3, 1, 1) / 256
-                diff = diff.mul(convert).sum(dim=1)
-        elif dataset == 'div2k':
-            shave = scale + 6
-        else:
-            raise NotImplementedError
-        valid = diff[..., shave:-shave, shave:-shave]
-    else:
-        valid = diff
-    mse = valid.pow(2).mean()
-    return -10 * torch.log10(mse)
-
-def main(folder1, folder2, dataset=None, scale=1, rgb_range=255):
-    # 确保文件夹存在
-    if not os.path.isdir(folder1):
-        raise ValueError(f"文件夹不存在：{folder1}")
-    if not os.path.isdir(folder2):
-        raise ValueError(f"文件夹不存在：{folder2}")
-    
-    # 获取排序后的文件列表
-    files1 = sorted([os.path.join(folder1, f) for f in os.listdir(folder1) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
-    files2 = sorted([os.path.join(folder2, f) for f in os.listdir(folder2) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
-    
-    if len(files1) != len(files2):
-        raise ValueError(f"图片数量不一致：{len(files1)} vs {len(files2)}")
-    
-    psnr_values = []
-    
-    for f1, f2 in zip(files1, files2):
-        # 读取图片并转换为RGB
-        img1 = Image.open(f1).convert('RGB')
-        img2 = Image.open(f2).convert('RGB')
-        
-        # 转换为numpy数组并调整维度
-        img1_np = np.array(img1).astype(np.float32)
-        img2_np = np.array(img2).astype(np.float32)
-        
-        # 转换为PyTorch张量并添加batch维度 [1, C, H, W]
-        img1_tensor = torch.from_numpy(img1_np).permute(2, 0, 1).unsqueeze(0)
-        img2_tensor = torch.from_numpy(img2_np).permute(2, 0, 1).unsqueeze(0)
-        
-        # 检查尺寸是否匹配
-        if img1_tensor.shape != img2_tensor.shape:
-            raise ValueError(f"尺寸不匹配：{f1} {img1_tensor.shape} vs {f2} {img2_tensor.shape}")
-        
-        # 计算PSNR
-        psnr = calc_psnr(img1_tensor, img2_tensor, dataset=dataset, scale=scale, rgb_range=rgb_range)
-        psnr_values.append(psnr.item())
-    
-    # 输出结果
-    print("各图像PSNR值：", psnr_values)
-    print("平均PSNR：", sum(psnr_values) / len(psnr_values))
-    return psnr_values
-
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description='计算两个文件夹中图像的PSNR')
-    parser.add_argument('--folder1', type=str, required=True, help='第一个图片文件夹路径')
-    parser.add_argument('--folder2', type=str, required=True, help='第二个图片文件夹路径')
-    parser.add_argument('--dataset', type=str, default=None, choices=[None, 'benchmark', 'div2k'], help='数据集类型')
-    parser.add_argument('--scale', type=int, default=1, help='缩放比例（默认1）')
-    parser.add_argument('--rgb_range', type=float, default=255.0, help='RGB范围（默认255.0）')
-    
-    args = parser.parse_args()
-    main(args.folder1, args.folder2, args.dataset, args.scale, args.rgb_range)
+Traceback (most recent call last):                                                                                                        
+  File "/mnt/diskb/penglong/war/liif-main/train_liif.py", line 231, in <module>
+    main(config, save_path)
+  File "/mnt/diskb/penglong/war/liif-main/train_liif.py", line 188, in main
+    val_res = eval_psnr(val_loader, model_,
+  File "/mnt/diskb/penglong/war/liif-main/test.py", line 75, in eval_psnr
+    pred = model(inp, batch['coord'], batch['cell'])
+  File "/mnt/diskb/penglong/anaconda3/envs/war/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1190, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/mnt/diskb/penglong/war/liif-main/models/ciaosr.py", line 285, in forward
+    pred = self.query_rgb(coord, cell)
+  File "/mnt/diskb/penglong/war/liif-main/models/ciaosr.py", line 193, in query_rgb
+    coord_k = F.grid_sample(feat_coord, coord_.flip(-1).unsqueeze(1),
+  File "/mnt/diskb/penglong/anaconda3/envs/war/lib/python3.9/site-packages/torch/nn/functional.py", line 4235, in grid_sample
+    return torch.grid_sampler(input, grid, mode_enum, padding_mode_enum, align_corners)
+RuntimeError: grid_sampler(): expected grid and input to have same batch size, but got input with sizes [4, 2, 192, 192] and grid with sizes [1, 1, 2304, 2]
