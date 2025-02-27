@@ -1,16 +1,37 @@
-Traceback (most recent call last):                                                                                                        
-  File "/mnt/diskb/penglong/war/liif-main/train_liif.py", line 231, in <module>
-    main(config, save_path)
-  File "/mnt/diskb/penglong/war/liif-main/train_liif.py", line 188, in main
-    val_res = eval_psnr(val_loader, model_,
-  File "/mnt/diskb/penglong/war/liif-main/test.py", line 75, in eval_psnr
-    pred = model(inp, batch['coord'], batch['cell'])
-  File "/mnt/diskb/penglong/anaconda3/envs/war/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1190, in _call_impl
+/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/site-packages/torch/autograd/__init__.py:197: UserWarning: Error detected in _ProjectGaussians2dBackward. Traceback of forward call that caused the error:
+  File "/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/threading.py", line 930, in _bootstrap
+    self._bootstrap_inner()
+  File "/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/threading.py", line 973, in _bootstrap_inner
+    self.run()
+  File "/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/threading.py", line 910, in run
+    self._target(*self._args, **self._kwargs)
+  File "/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/site-packages/torch/nn/parallel/parallel_apply.py", line 64, in _worker
+    output = module(*input, **kwargs)
+  File "/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1190, in _call_impl
     return forward_call(*input, **kwargs)
-  File "/mnt/diskb/penglong/war/liif-main/models/ciaosr.py", line 285, in forward
-    pred = self.query_rgb(coord, cell)
-  File "/mnt/diskb/penglong/war/liif-main/models/ciaosr.py", line 193, in query_rgb
-    coord_k = F.grid_sample(feat_coord, coord_.flip(-1).unsqueeze(1),
-  File "/mnt/diskb/penglong/anaconda3/envs/war/lib/python3.9/site-packages/torch/nn/functional.py", line 4235, in grid_sample
-    return torch.grid_sampler(input, grid, mode_enum, padding_mode_enum, align_corners)
-RuntimeError: grid_sampler(): expected grid and input to have same batch size, but got input with sizes [4, 2, 192, 192] and grid with sizes [1, 1, 2304, 2]
+  File "/data/Shenzhen/war/GaussianSR/code/models/gaussian.py", line 424, in forward
+    image = self.query_output(inp,scale)
+  File "/data/Shenzhen/war/GaussianSR/code/models/gaussian.py", line 367, in query_output
+    xys, depths, radii, conics, num_tiles_hit = project_gaussians_2d(get_xyz, \
+  File "/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/site-packages/gsplat/project_gaussians_2d.py", line 50, in project_gaussians_2d
+    return _ProjectGaussians2d.apply(
+  File "/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/site-packages/torch/fx/traceback.py", line 57, in format_stack
+    return traceback.format_stack()
+ (Triggered internally at ../torch/csrc/autograd/python_anomaly_mode.cpp:114.)
+  Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+
+                                                       
+Traceback (most recent call last):
+  File "/data/Shenzhen/war/GaussianSR/code/train_gaussian.py", line 331, in <module>
+    main(config, save_path, args)
+  File "/data/Shenzhen/war/GaussianSR/code/train_gaussian.py", line 208, in main
+    train_loss = train(train_loader, model, optimizer)
+  File "/data/Shenzhen/war/GaussianSR/code/train_gaussian.py", line 165, in train
+    loss.backward()
+  File "/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/site-packages/torch/_tensor.py", line 487, in backward
+    torch.autograd.backward(
+  File "/data/Shenzhen/war/GaussianSR/env/env/lib/python3.9/site-packages/torch/autograd/__init__.py", line 197, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: Function '_ProjectGaussians2dBackward' returned nan values in its 1th output.
+/data/Shenzhen/war/GaussianSR/run.sh: line 26: unexpected EOF while looking for matching `''
+/data/Shenzhen/war/GaussianSR/run.sh: line 32: syntax error: unexpected end of file
