@@ -1,10 +1,40 @@
-import signal
-import sys
+def parse_file(filename):
+    data = []
+    with open(filename, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            try:
+                psnr = float(parts[-1])
+                img_name = ' '.join(parts[:-1])
+                data.append((img_name, psnr))
+            except ValueError:
+                continue
+    return data
 
-def signal_handler(signum, frame):
-    print(f"信号 {signum} 在以下位置触发：")
-    traceback.print_stack(frame)
-    sys.exit(1)
+# 替换为实际文件路径
+file1_data = parse_file('file1.txt')
+file2_data = parse_file('file2.txt')
 
-# 注册浮点异常信号（SIGFPE）
-signal.signal(signal.SIGFPE, signal_handler)
+comparisons = []
+min_length = min(len(file1_data), len(file2_data))
+for i in range(min_length):
+    img1, psnr1 = file1_data[i]
+    img2, psnr2 = file2_data[i]
+    diff = abs(psnr1 - psnr2)
+    comparisons.append((diff, img1, img2, psnr1, psnr2))
+
+# 按差值降序排序
+comparisons.sort(reverse=True, key=lambda x: x[0])
+
+# 取前五
+top5 = comparisons[:5]
+
+# 输出结果
+for item in top5:
+    diff, img1, img2, psnr1, psnr2 = item
+    print(f"{img1} {psnr1:.2f} {psnr2:.2f} {diff:.2f}")
