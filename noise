@@ -1,12 +1,12 @@
-h_lr = math.floor(self.inp_size / s + 1e-9)
-            w_lr = math.floor(self.inp_size / s + 1e-9)
-            # img = img[:, :round(h_lr * s), :round(w_lr * s)]  # assume round int
-            # img_down = resize_fn(img, (h_lr, w_lr))
-            # crop_lr, crop_hr = img_down, img
-            
-            w_hr = round(w_lr * s)
-            h_hr = round(h_lr * s)
-            x0 = random.randint(0, img.shape[-2] - h_hr)
-            y0 = random.randint(0, img.shape[-1] - w_hr)
-            crop_hr = img[:, x0: x0 + h_hr, y0: y0 + w_hr]
-            crop_lr = resize_fn(crop_hr, (h_lr,w_lr))
+self.pretrained_path = 'code/models/weights/HAT-L_SRx4_ImageNet-pretrain.pth'
+        # self.apply(self._init_weights)
+        if self.pretrained_path:
+            try:
+                pretrained_dict = torch.load(self.pretrained_path)
+                param_key_g = 'params_ema'
+                self.load_state_dict(pretrained_dict[param_key_g] if param_key_g in pretrained_dict.keys() else pretrained_dict, strict=True)
+                print("Pretrained model loaded successfully.")
+            except FileNotFoundError:
+                print(f"File not found: {self.pretrained_path}")
+            except RuntimeError as e:
+                print(f"Error loading model: {e}")
