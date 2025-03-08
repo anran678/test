@@ -2,33 +2,34 @@ import os
 import shutil
 
 # 配置路径
-source_root = "test_LR"    # 源文件夹路径
-target_root = "filtered"   # 目标文件夹路径（自动创建）
-
-# 创建目标文件夹
-os.makedirs(target_root, exist_ok=True)
+source_root = "test_LR"
+target_root = "filtered"
 
 # 遍历源目录
 for parent_dir in os.listdir(source_root):
     parent_path = os.path.join(source_root, parent_dir)
     
     if os.path.isdir(parent_path):
-        # 遍历子文件夹中的文件
+        # 创建目标子目录
+        target_subdir = os.path.join(target_root, parent_dir)
+        os.makedirs(target_subdir, exist_ok=True)
+
+        # 遍历文件
         for filename in os.listdir(parent_path):
-            # 精确匹配前缀条件
             if filename.startswith(('3.9', '4.0')):
-                # 构建完整路径
-                src_file = os.path.join(parent_path, filename)
-                
-                # 提取扩展名（保留文件类型）
+                # 处理文件扩展名
                 _, ext = os.path.splitext(filename)
                 
-                # 生成目标路径
-                dest_file = os.path.join(target_root, f"{parent_dir}{ext}")
+                # 构建新文件名
+                new_filename = f"{parent_dir}{ext}"
+                dest_path = os.path.join(target_subdir, new_filename)
                 
                 # 执行复制
-                shutil.copy2(src_file, dest_file)
-                print(f"成功复制：{parent_dir} => {dest_file}")
-                break  # 找到第一个匹配文件后跳出循环
+                shutil.copy2(
+                    os.path.join(parent_path, filename),
+                    dest_path
+                )
+                print(f"已创建：{dest_path}")
+                break  # 每个文件夹只处理第一个匹配文件
 
-print("操作完成！")
+print("文件整理完成！")
